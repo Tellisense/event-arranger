@@ -25,6 +25,7 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
   }, [])
 
   //use .slice() to create a new array in memory, sort will override the original array
+  //also you want to memoize it so you don't keep running the filter function at every render, this will only run once unless the originalApiArray changes.
   const filteredDataCost = useMemo(() => originalApiArray.slice().sort((a, b) => a.hourlyRate - b.hourlyRate), [originalApiArray])
 
   const filteredDataReview = useMemo(() => originalApiArray.slice().sort((a, b) => b.stars - a.stars), [originalApiArray])
