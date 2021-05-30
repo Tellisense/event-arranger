@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react"
-import axios from "axios"
+import { ToastContainer } from 'react-toastify';
 import EventSelect from "./EventSelect"
 import StateSelect from "./StateSelector"
 import Checkbox from "./Checkbox"
+import http from '../services/httpService'
+import 'react-toastify/dist/ReactToastify.css';
 
-const CardComponent = ({ axiosUrl, axiosPara }) => {
+
+
+const CardComponent = ({ axiosPara }) => {
   const [originalApiArray, setOriginalApiArray] = useState([])
   const [apiArray, setApiArray] = useState([])
   const [state, setState] = useState('')
@@ -15,7 +19,7 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
   useEffect(() => {
     try {
       const apiCall = async () => {
-        const { data } = await axios.get(`${axiosUrl}/${axiosPara}`)
+        const { data } = await http.get(`/${axiosPara}`)
         setOriginalApiArray(data)
       }
       apiCall()
@@ -45,6 +49,9 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
     )
   }, [originalApiArray])
 
+
+
+  // this will run any times the dependency values change, ie. review sort is clicked. 
   useEffect(() => {
     if (cost && review === false) setApiArray(filteredDataCost)
     else if (review && cost === false) setApiArray(filteredDataReview)
@@ -52,7 +59,7 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
     else setApiArray(originalApiArray)
   }, [cost, review, originalApiArray])
 
-
+  // event handlers
   const handleEventChange = e => setEvent(e.target.value)
   const handleStateChange = e => setState(e.target.value)
   const handleReviewChange = () => setReview(!review)
@@ -67,12 +74,17 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
   // console.log(`filteredDataReview: `, filteredDataReview)
   // console.log(`filteredDataCost: `, filteredDataCost)
 
-  const style = {
-    margin: '2rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  }
+
+  //generally don't use inline styles, if you do declare an object like this you need to memoize it, if you don't a new object in memory is created at every render.
+  const style = useMemo(() => {
+    return ({
+      margin: '2rem',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    })
+  }, [])
+
 
   return (
     <>
@@ -86,10 +98,11 @@ const CardComponent = ({ axiosUrl, axiosPara }) => {
         <StateSelect onChange={handleStateChange} />
       </div>
       <div className="card-main">
+        <ToastContainer />
         {apiArray?.map((item) => {
           return (
-            <div className="card-main-card">
-              <img className="card-main-card-image" src={`${axiosUrl}${item?.imageSrc?.url}`} alt="Card Image" />
+            <div key={item.id} className="card-main-card">
+              <img className="card-main-card-image" src={`${process.env.REACT_APP_API_URL}${item?.imageSrc?.url}`} alt="Card Image" />
               <div className="card-main-card-info">
                 <h4>{`${item.id}: ${item.name}`}</h4>
                 <p>{`$${item.hourlyRate}/hr`}</p>
